@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Three.js + GLB Animation</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three",
+          "three/": "https://esm.sh/three/",
+          "GLTFLoader": "https://esm.sh/three/examples/jsm/loaders/GLTFLoader.js",
+          "OrbitControls": "https://esm.sh/three/examples/jsm/controls/OrbitControls.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from "three";
+      import { OrbitControls } from "OrbitControls";
+      import { GLTFLoader } from "GLTFLoader";
+
+      // Scene
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x222222);
+
+      // Camera
+      const camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(3, 2, 5);
+
+      // Renderer
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Controls
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 1, 0);
+      controls.update();
+
+      // Light
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 10);
+      scene.add(ambientLight);
+
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.5;
+
+      dirLight.position.set(-3, 10, -10);
+      scene.add(dirLight);
+
+      // GLB Loader
+      const loader = new GLTFLoader();
+      let mixer;
+
+      loader.load(
+        "./models/white_chinese_dragon.glb",
+        (gltf) => {
+          const model = gltf.scene;
+          //   model.scale.set(0.02, 0.02, 0.02);
+          model.scale.set(2, 2, 2);
+          scene.add(model);
+          console.log(gltf.animations);
+
+          // Animation
+          mixer = new THREE.AnimationMixer(model);
+          const flying = gltf.animations.find(
+            (ani) => ani.name.toLowerCase() == "run"
+          );
+          mixer.clipAction(flying).play();
+          // gltf.animations.forEach((clip) => {
+          //   mixer.clipAction(clip).play();
+          // });
+        },
+        undefined,
+        (error) => {
+          console.error("Error loading GLB:", error);
+        }
+      );
+
+      // Resize
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Render loop
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        if (mixer) mixer.update(clock.getDelta());
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>
