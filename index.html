@@ -9,6 +9,7 @@
       href="./assets/images/icon.ico"
       type="image/x-icon"
     />
+    <link rel="stylesheet" href="./assets/styles/main.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <script type="importmap">
@@ -27,128 +28,6 @@
     <div class="tools bg-red-700 fixed z-10 top-0 left-0 w-10 h-4"></div>
     <div id="globeViz"></div>
 
-    <script type="module">
-      import Globe from "https://esm.sh/globe.gl";
-      import { feature } from "https://esm.sh/topojson-client@3";
-      import { geoCentroid } from "https://esm.sh/d3-geo@3";
-
-      import * as THREE from "three";
-      import { OrbitControls } from "OrbitControls";
-      import { GLTFLoader } from "GLTFLoader";
-
-      import Model from "./objects/Model.js";
-
-      const zoomDis = 0.5;
-      const countriesData =
-        "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-      const capitalData =
-        "https://globe.gl/example/datasets/ne_110m_populated_places_simple.geojson";
-      const globImageUrl =
-        "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
-      const bumpImageUrl =
-        "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png";
-
-      let hoverPolygon = null;
-
-      Promise.all([
-        fetch(countriesData).then((res) => res.json()),
-        fetch(capitalData).then((res) => res.json()),
-      ]).then(([worldData, places]) => {
-        const world = new Globe(document.getElementById("globeViz"), {
-          animateIn: false,
-        })
-          .globeImageUrl(globImageUrl)
-          .bumpImageUrl(bumpImageUrl)
-
-          // 🔹 Hiển thị tên thành phố
-          .labelsData(places.features)
-          .labelLat((d) => d.properties.latitude)
-          .labelLng((d) => d.properties.longitude)
-          .labelText((d) => d.properties.name)
-          .labelSize((d) => Math.sqrt(d.properties.pop_max) * 4e-4)
-          .labelDotRadius((d) => Math.sqrt(d.properties.pop_max) * 4e-4)
-          .labelColor(() => "rgba(255, 165, 0, 0.75)")
-          .labelResolution(2)
-          .labelAltitude(0.05)
-
-          // 🔹 Hiển thị ranh giới quốc gia
-          .polygonsData(
-            feature(worldData, worldData.objects.countries).features
-          )
-          .polygonCapColor((d) =>
-            d === hoverPolygon ? "rgba(0,255,0,0.6)" : "rgba(0, 0, 0, 0)"
-          )
-          .polygonSideColor(() => "rgba(0, 100, 255, 0.15)")
-          .polygonStrokeColor(() => "#111")
-          .polygonLabel(({ properties: d }) => `<b>${d.name}</b>`)
-          .onPolygonHover((d) => {
-            hoverPolygon = d;
-            document.body.style.cursor = d ? "pointer" : null;
-            world.polygonsData(world.polygonsData()); // Force update
-          })
-          .onPolygonClick((polygon) => {
-            const [lng, lat] = geoCentroid(polygon);
-            world.pointOfView({ lat, lng, altitude: zoomDis }, 500);
-          });
-
-        // === Thêm mô hình quay quanh địa cầu ===
-        const scene = world.scene();
-        const globeRadius = world.getGlobeRadius?.() ?? 100;
-
-        // Đèn chiếu
-        const light = new THREE.PointLight(0xffffff, 1);
-        light.position.set(200, 200, 200);
-        scene.add(light);
-
-        // // Vệ tinh đơn giản
-        // const satellite = new THREE.Mesh(
-        //   new THREE.SphereGeometry(2, 32, 32),
-        //   new THREE.MeshStandardMaterial({ color: 0xffcc00 })
-        // );
-        // scene.add(satellite);
-
-        // // Animation loop
-        // let angle = 0;
-        // const orbitRadius = globeRadius + 30;
-
-        // function animate() {
-        //   requestAnimationFrame(animate);
-        //   angle += 0.01;
-
-        //   // Cập nhật vị trí vệ tinh
-        //   satellite.position.x = orbitRadius * Math.cos(angle);
-        //   satellite.position.z = orbitRadius * Math.sin(angle);
-        //   satellite.position.y = 20 * Math.sin(angle * 2);
-        // }
-
-        // animate(); // Bắt đầu animation
-        // Load mô hình .glb
-        const clock = new THREE.Clock();
-
-        // const spaceshipURL = "./models/spaceship.glb";
-        // const Spaceship = new Model(clock, spaceshipURL, globeRadius);
-        // Spaceship.load(scene);
-
-        const chineseDragonURL = "./models/white_chinese_dragon.glb";
-        const ChineseDragon = new Model(
-          clock,
-          chineseDragonURL,
-          globeRadius,
-          [10, 10, 10],
-          "run",
-          10,
-          true
-        );
-        ChineseDragon.load(scene);
-
-        // Animation loop
-        function animate() {
-          requestAnimationFrame(animate);
-          // Spaceship.update();
-          ChineseDragon.update();
-        }
-        animate();
-      });
-    </script>
+    <script type="module" src="./assets/scripts/index.js"></script>
   </body>
 </html>

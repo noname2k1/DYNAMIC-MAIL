@@ -6,6 +6,7 @@ export default class Model {
     clock,
     modelURL,
     globeRadius = 100,
+    speed = 0.01,
     scale = [0.1, 0.1, 0.1],
     animateName = "",
     dir = 1,
@@ -22,6 +23,7 @@ export default class Model {
     this.dir = dir;
     this.ligher = ligher;
     this.animateName = animateName;
+    this.speed = speed;
   }
 
   load(scene, onLoaded = () => {}) {
@@ -34,17 +36,6 @@ export default class Model {
         this.model.scale.set(...this.scale);
         scene.add(this.model);
         if (this.ligher) {
-          // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
-          // hemiLight.position.set(0, 20, 0);
-          // this.model.add(hemiLight);
-
-          // const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-
-          // const ambientLight = new THREE.AmbientLight(0xffffff, 10);
-          // this.model.add(ambientLight);
-
-          // dirLight.position.set(-3, 10, -10);
-          // this.model.add(dirLight);
           gltf.scene.traverse((child) => {
             if (child.isMesh) {
               const oldMat = child.material;
@@ -58,15 +49,17 @@ export default class Model {
         // Nếu có animation
         if (gltf.animations.length > 0) {
           this.mixer = new THREE.AnimationMixer(this.model);
+          // console.log(gltf.animations);
           if (
             this.animateName != "" &&
             gltf.animations.some(
-              (ani) => ani.name.toLowerCase() == this.animateName
+              (ani) => ani.name.toLowerCase() == this.animateName.toLowerCase()
             )
           ) {
             const specificAnim = gltf.animations.find(
-              (ani) => ani.name.toLowerCase() == this.animateName
+              (ani) => ani.name.toLowerCase() == this.animateName.toLowerCase()
             );
+            // console.log(specificAnim);
             this.mixer.clipAction(specificAnim)?.play();
           } else {
             gltf.animations.forEach((clip) => {
@@ -82,24 +75,20 @@ export default class Model {
     );
   }
 
-  update() {
+  update(delta) {
     if (!this.model) return;
 
-    this.angle += 0.01;
+    this.angle += this.speed;
 
-    // Vị trí bay quanh địa cầu
     this.model.position.set(
       this.orbitRadius * Math.cos(this.angle),
       20 * Math.sin(this.angle * 2),
       this.orbitRadius * Math.sin(this.angle)
     );
 
-    // Hướng đầu model theo quỹ đạo bay
     this.model.rotation.y = -this.angle + Math.PI / this.dir;
 
-    // Cập nhật animation nếu có
     if (this.mixer) {
-      const delta = this.clock.getDelta();
       this.mixer.update(delta);
     }
   }
@@ -108,3 +97,26 @@ export default class Model {
     return this.model;
   }
 }
+
+// // Vệ tinh đơn giản
+// const satellite = new THREE.Mesh(
+//   new THREE.SphereGeometry(2, 32, 32),
+//   new THREE.MeshStandardMaterial({ color: 0xffcc00 })
+// );
+// scene.add(satellite);
+
+// // Animation loop
+// let angle = 0;
+// const orbitRadius = globeRadius + 30;
+
+// function animate() {
+//   requestAnimationFrame(animate);
+//   angle += 0.01;
+
+//   // Cập nhật vị trí vệ tinh
+//   satellite.position.x = orbitRadius * Math.cos(angle);
+//   satellite.position.z = orbitRadius * Math.sin(angle);
+//   satellite.position.y = 20 * Math.sin(angle * 2);
+// }
+
+// animate(); // Bắt đầu animation
