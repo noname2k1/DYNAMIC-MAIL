@@ -11,6 +11,13 @@
     />
     <link rel="stylesheet" href="./assets/styles/main.css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .not-active-tab {
+        cursor: pointer;
+        --tw-bg-opacity: 1;
+        background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1)) /* #374151 */;
+      }
+    </style>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <script type="importmap">
       {
@@ -49,14 +56,97 @@
           class="h-full"
         />
       </button>
+      <!-- on/off rotation globe -->
+      <button
+        title="rotation globe switch"
+        class="search-diary group p-2 rounded-md bg-white ml-4 h-14 hover:bg-white/35 relative"
+      >
+        <img
+          src="./assets/svgs/refresh.svg"
+          alt="rotation globe switch"
+          class="h-full group-hover:rotate-180 duration-300"
+        />
+        <div
+          class="absolute top-[calc(100%+4px)] bg-white min-w-full left-0 rounded-sm shadow-lg p-2 invisible opacity-0 duration-300 group-hover:opacity-100 group-hover:visible"
+        >
+          <div class="flex items-center">
+            <input type="checkbox" name="rotation-globe" id="rotation-globe" />
+            <label for="rotation-globe" class="text-nowrap ml-1"
+              >Rotation Globe Enabled</label
+            >
+          </div>
+          <div class="flex items-center space-x-4">
+            <div class="">
+              <input
+                type="radio"
+                name="rotation-globe-speed"
+                id="speed-01"
+                value="0.1"
+              />
+              <label for="speed-01">0.1</label>
+            </div>
+            <div class="">
+              <input
+                type="radio"
+                name="rotation-globe-speed"
+                id="speed-02"
+                value="0.2"
+              />
+              <label for="speed-02">0.2</label>
+            </div>
+            <div class="">
+              <input
+                type="radio"
+                name="rotation-globe-speed"
+                id="speed-03"
+                value="0.3"
+              />
+              <label for="speed-03">0.3</label>
+            </div>
+          </div>
+        </div>
+      </button>
+      <!-- change bg globe btn -->
+      <button
+        title="background globe"
+        class="bg-globe p-2 rounded-md bg-white ml-4 h-14 hover:bg-white/35"
+      >
+        <img
+          src="./assets/svgs/image.svg"
+          alt="background globe"
+          class="h-full"
+        />
+      </button>
     </div>
+
+    <!-- new diary form begin -->
     <div
-      id="new-diary-form"
+      id="new-diary-form-wrapper"
       class="fixed z-10 bg-black/80 flex items-center justify-center min-h-screen w-screen transition ease-in-out duration-500 invisible"
     >
+      <div class="background-table bg-gray-800 hidden p-10 rounded-lg">
+        <h2 class="text-white font-semibold text-2xl uppercase text-center">
+          Choose the backround you want
+        </h2>
+        <div class="flex w-full text-white uppercase">
+          <div
+            class="globe-image-tab flex-1 flex items-center justify-center h-10"
+          >
+            <span>globe image</span>
+          </div>
+          <div
+            class="bump-image-tab flex-1 justify-center flex items-center not-active-tab"
+          >
+            <span>bump image</span>
+          </div>
+        </div>
+        <div
+          class="image-collection flex flex-wrap justify-center gap-4 p-4 bg-gray-800"
+        ></div>
+      </div>
       <form
-        id="confessionForm"
-        class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md space-y-6 animate-fade-in"
+        id="new-diary-form"
+        class="bg-white p-8 rounded-2xl hidden shadow-2xl w-full max-w-md space-y-6 animate-fade-in"
       >
         <h2
           class="text-3xl flex items-center justify-between font-extrabold text-center text-gray-800 uppercase tracking-wider"
@@ -71,6 +161,7 @@
           <label for="message" class="block text-gray-700 font-semibold mb-2"
             >Nội dung nhật ký:</label
           >
+          <!-- <div contenteditable="" name="content" id="editable_content"></div> -->
           <textarea
             id="message"
             name="message"
@@ -148,12 +239,19 @@
 
         <button
           type="submit"
-          class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+          class="new-diary-btn w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-semibold h-[40px] flex justify-center"
         >
-          Gửi
+          <span class="send-text">Gửi</span>
+          <img
+            src="./assets/images/loading.gif"
+            alt="loading gif"
+            class="h-full hidden loading"
+          />
         </button>
       </form>
     </div>
+    <!-- new diary form end -->
+
     <!-- Nút người dùng -->
     <div class="fixed right-4 top-4 inline-block text-left z-10">
       <button

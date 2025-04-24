@@ -4,13 +4,79 @@ import { geoCentroid, geoContains } from "https://esm.sh/d3-geo@3";
 import Model from "../../objects/Model.js";
 import * as THREE from "three";
 // import { OrbitControls } from "OrbitControls";
-import { GLTFLoader } from "GLTFLoader";
+// import { GLTFLoader } from "GLTFLoader";
 
+const globeRotation = JSON.parse(
+  window.localStorage.getItem("rotation-globe")
+) || {
+  enabled: true,
+  speed: 0.1,
+};
+
+let globeSelected = true;
+const imageCollection = document.querySelector(".image-collection");
+const globeImageTab = document.querySelector(".globe-image-tab");
+const bumpImageTab = document.querySelector(".bump-image-tab");
 const zoomDis = 0.5;
 const countriesData = "./assets/jsons/countries_110m.json";
 // https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json
 const capitalData = "./assets/jsons/ne_110m_populated_places_simple.geojson";
 // https://globe.gl/example/datasets/ne_110m_populated_places_simple.geojson
+
+const globeImageUrls = [
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg",
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg",
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-day.jpg",
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg",
+];
+
+const bumpImageUrls = [
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png",
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/night-sky.png",
+  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-water.png",
+];
+
+const renderImagesHTML = (imageArray) => {
+  return imageArray.reduce((prev, curr, currIndex, arr) => {
+    return (
+      prev +
+      `<div
+              class="${
+                globeSelected ? "globe-image-item" : "bump-image-item"
+              } w-48 h-32 overflow-hidden rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105 relative"
+            >
+              <img
+                src="${curr}"
+                alt="image-${currIndex}"
+                class="w-full h-full object-cover"
+              />
+              <img
+                src="./assets/svgs/check-one.svg"
+                alt="image-${currIndex}"
+                class="absolute right-3 bottom-3 w-8 h-8 object-cover hidden check-image"
+              />
+            </div>`
+    );
+  }, "");
+};
+
+function handleTabSwitch(activeTab, inactiveTab, imageUrls, isGlobe) {
+  activeTab.classList.remove("not-active-tab");
+  inactiveTab.classList.add("not-active-tab");
+  globeSelected = isGlobe;
+  imageCollection.innerHTML = renderImagesHTML(imageUrls);
+}
+
+globeImageTab.addEventListener("click", () => {
+  handleTabSwitch(globeImageTab, bumpImageTab, globeImageUrls, true);
+});
+
+bumpImageTab.addEventListener("click", () => {
+  handleTabSwitch(bumpImageTab, globeImageTab, bumpImageUrls, false);
+});
+
+imageCollection.innerHTML = renderImagesHTML(globeImageUrls);
+
 const globImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
 const bumpImageUrl =
@@ -27,7 +93,7 @@ Promise.all([
   })
     .globeImageUrl(globImageUrl)
     .bumpImageUrl(bumpImageUrl)
-
+    // .showGlobe(false)
     // 🔹 Hiển thị tên thành phố
     .labelsData(places.features)
     .labelLat((d) => d.properties.latitude)
@@ -47,7 +113,7 @@ Promise.all([
     .polygonSideColor(() => "rgba(0, 100, 255, 0.15)")
     .polygonStrokeColor(() => "#111")
     .polygonLabel(({ properties: d }) => `<b>${d.name}</b>`)
-    .polygonAltitude(0.01)
+    // .polygonAltitude((d) => (d === hoverPolygon ? 0.03 : 0))
     .onPolygonHover((d) => {
       hoverPolygon = d;
       document.body.style.cursor = d ? "pointer" : null;
@@ -56,10 +122,29 @@ Promise.all([
     .onPolygonClick((polygon) => {
       const [lng, lat] = geoCentroid(polygon);
       world.pointOfView({ lat, lng, altitude: zoomDis }, 500);
-    });
+    })
+    .htmlElement((d) => {
+      const markerSvg = `<svg viewBox="-4 0 36 36">
+<path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path>
+<circle fill="black" cx="14" cy="14" r="7"></circle>
+</svg>`;
+      const el = document.createElement("div");
+      el.innerHTML = markerSvg;
+      el.style.color = d.color;
+      el.style.width = `${d.size}px`;
+      el.style.transition = "opacity 250ms";
 
-  world.controls().autoRotate = true;
-  world.controls().autoRotateSpeed = 0.1;
+      el.style["pointer-events"] = "auto";
+      el.style.cursor = "pointer";
+      el.onclick = () => console.info(d);
+      return el;
+    })
+    .htmlElementVisibilityModifier(
+      (el, isVisible) => (el.style.opacity = isVisible ? 1 : 0)
+    );
+
+  world.controls().autoRotate = globeRotation.enabled;
+  world.controls().autoRotateSpeed = globeRotation.speed;
   world.pointOfView({ lat: 0, lng: 0, altitude: 1.5 });
 
   // === Thêm mô hình quay quanh địa cầu ===
@@ -136,6 +221,7 @@ Promise.all([
     // renderer.render(scene, camera);
   }
   animate();
+  window.world = world;
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -163,4 +249,62 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     window.location.href = "/auth.html";
   }
+
+  // handle rotate globe
+  const rotateGlobeSwitch = document.getElementById("rotation-globe");
+  const rotateGlobeSpeedRadioes = document.querySelectorAll(
+    "input[name='rotation-globe-speed']"
+  );
+  rotateGlobeSwitch.checked = globeRotation.enabled;
+  rotateGlobeSwitch.addEventListener("change", function (e) {
+    const checked = e.target.checked;
+    window.localStorage.setItem(
+      "rotation-globe",
+      JSON.stringify({
+        ...globeRotation,
+        enabled: checked,
+      })
+    );
+    window.world.controls().autoRotate = checked;
+  });
+  rotateGlobeSpeedRadioes.forEach((radio) => {
+    if (radio.value == globeRotation.speed) {
+      radio.checked = true;
+    }
+    radio.addEventListener("click", (e) => {
+      const speed = +e.target.value;
+      window.localStorage.setItem(
+        "rotation-globe",
+        JSON.stringify({
+          ...globeRotation,
+          speed,
+        })
+      );
+      window.world.controls().autoRotateSpeed = speed;
+    });
+  });
+
+  // handle image collection
+  imageCollection.addEventListener("click", (event) => {
+    if (
+      event.target &&
+      event.target.matches("img") &&
+      !event.target.matches(".check-image")
+    ) {
+      const imgSrc = event.target.src;
+      globeSelected
+        ? window.world.globeImageUrl(imgSrc)
+        : window.world.bumpImageUrl(imgSrc);
+      const checkImage = event.target.nextElementSibling;
+      if (checkImage && checkImage.tagName.toLowerCase() === "img") {
+        checkImage.classList.remove("hidden");
+      }
+      const allCheckImages = imageCollection.querySelectorAll(".check-image");
+      allCheckImages.forEach((img) => {
+        if (img !== checkImage) {
+          img.classList.add("hidden");
+        }
+      });
+    }
+  });
 });
