@@ -10,7 +10,9 @@ export default class Model {
     scale = [0.1, 0.1, 0.1],
     animateName = "",
     dir = 1,
-    ligher = false
+    ligher = false,
+    type = "fly",
+    staticPos = []
   ) {
     this.clock = clock;
     this.modelURL = modelURL;
@@ -19,11 +21,14 @@ export default class Model {
     this.model = null;
     this.mixer = null;
     this.angle = 0;
-    this.orbitRadius = globeRadius + 30;
+    this.orbitRadius = globeRadius + (type == "swim" ? -1.5 : 30);
     this.dir = dir;
     this.ligher = ligher;
     this.animateName = animateName;
     this.speed = speed;
+    this.type = type;
+    this.currentTarget = null;
+    this.staticPos = staticPos;
   }
 
   load(scene, onLoaded = () => {}) {
@@ -77,16 +82,23 @@ export default class Model {
 
   update(delta) {
     if (!this.model) return;
+    let x, y, z;
+    if (this.staticPos.length == 0) {
+      x = this.orbitRadius * Math.cos(this.angle);
+      y = 20 * Math.sin(this.angle * 2);
+      z = this.orbitRadius * Math.sin(this.angle);
+      this.angle += this.speed;
+      this.model.rotation.y = -this.angle + Math.PI / this.dir;
+      if (this.type == "swim") {
+        this.model.rotation.z = 29.9;
+      }
+    } else {
+      x = this.staticPos[0];
+      y = this.staticPos[1];
+      z = this.staticPos[2];
+    }
 
-    this.angle += this.speed;
-
-    this.model.position.set(
-      this.orbitRadius * Math.cos(this.angle),
-      20 * Math.sin(this.angle * 2),
-      this.orbitRadius * Math.sin(this.angle)
-    );
-
-    this.model.rotation.y = -this.angle + Math.PI / this.dir;
+    this.model.position.set(x, y, z);
 
     if (this.mixer) {
       this.mixer.update(delta);

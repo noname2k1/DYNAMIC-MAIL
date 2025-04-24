@@ -1,22 +1,23 @@
 import Globe from "https://esm.sh/globe.gl";
 import { feature } from "https://esm.sh/topojson-client@3";
-import { geoCentroid } from "https://esm.sh/d3-geo@3";
-
+import { geoCentroid, geoContains } from "https://esm.sh/d3-geo@3";
+import Model from "../../objects/Model.js";
 import * as THREE from "three";
 // import { OrbitControls } from "OrbitControls";
-// import { GLTFLoader } from "GLTFLoader";
-
-import Model from "../../objects/Model.js";
+import { GLTFLoader } from "GLTFLoader";
 
 const zoomDis = 0.5;
 const countriesData = "./assets/jsons/countries_110m.json";
+// https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json
 const capitalData = "./assets/jsons/ne_110m_populated_places_simple.geojson";
+// https://globe.gl/example/datasets/ne_110m_populated_places_simple.geojson
 const globImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
 const bumpImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png";
 
 let hoverPolygon = null;
+let whale = null;
 
 Promise.all([
   fetch(countriesData).then((res) => res.json()),
@@ -47,6 +48,7 @@ Promise.all([
     .polygonSideColor(() => "rgba(0, 100, 255, 0.15)")
     .polygonStrokeColor(() => "#111")
     .polygonLabel(({ properties: d }) => `<b>${d.name}</b>`)
+    .polygonAltitude(0.01)
     .onPolygonHover((d) => {
       hoverPolygon = d;
       document.body.style.cursor = d ? "pointer" : null;
@@ -94,6 +96,15 @@ Promise.all([
     //   dir: 10,
     // },
     {
+      url: "./models/killer_whale.glb",
+      speed: 0.002,
+      scale: [0.005, 0.005, 0.005],
+      animateName: "Take 001",
+      dir: 10,
+      lighter: true,
+      type: "swim",
+    },
+    {
       url: "./models/mecha_aurelion_sol.glb",
       speed: 0.02,
       scale: [0.05, 0.05, 0.05],
@@ -113,11 +124,17 @@ Promise.all([
       config.scale,
       config.animateName,
       config.dir,
-      config.lighter
+      config.lighter,
+      config.type
     );
     model.load(scene);
     models.push(model);
   });
+
+  // console.dir({ world });
+  // console.log({ polygonData: world.polygonsData() });
+
+  // whale-end
 
   // Animation loop
   function animate() {
@@ -127,103 +144,4 @@ Promise.all([
     // renderer.render(scene, camera);
   }
   animate();
-});
-
-function handleFormClose(e) {
-  e.target.classList.add("invisible");
-}
-
-// new diary form
-let newDiaryBtn = document.querySelector(".new-diary");
-let closebtn = document.querySelector(".close-btn");
-let newDiaryFormWrapper = document.getElementById("new-diary-form");
-let forms = document.querySelectorAll("form");
-newDiaryBtn.addEventListener("click", function () {
-  if (newDiaryFormWrapper.classList.contains("invisible")) {
-    newDiaryFormWrapper.classList.remove("invisible");
-  }
-});
-newDiaryFormWrapper.addEventListener("click", handleFormClose);
-closebtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  newDiaryFormWrapper.classList.add("invisible");
-});
-forms.forEach((form) => {
-  form.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
-});
-
-const yesRadio = document.getElementById("usePasswordYes");
-const noRadio = document.getElementById("usePasswordNo");
-const passwordField = document.getElementById("passwordField");
-const togglePassword = document.getElementById("togglePassword");
-const passwordInput = document.getElementById("password");
-const errorMsg = document.getElementById("errorMsg");
-
-yesRadio.addEventListener("change", () => {
-  passwordField.classList.remove("hidden");
-});
-
-noRadio.addEventListener("change", () => {
-  passwordField.classList.add("hidden");
-  errorMsg.classList.add("hidden");
-});
-
-togglePassword.addEventListener("click", () => {
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-    togglePassword.textContent = "Ẩn";
-  } else {
-    passwordInput.type = "password";
-    togglePassword.textContent = "Hiện";
-  }
-});
-
-document.getElementById("confessionForm").addEventListener("submit", (e) => {
-  if (yesRadio.checked && !passwordInput.value) {
-    e.preventDefault();
-    errorMsg.classList.remove("hidden");
-  }
-});
-
-// user btn
-
-document.addEventListener("DOMContentLoaded", () => {
-  const userMenuButton = document.getElementById("userMenuButton");
-  const userDropdown = document.getElementById("userDropdown");
-
-  // Toggle dropdown menu
-  userMenuButton.addEventListener("click", () => {
-    const isHidden = userDropdown.classList.contains("hidden");
-    if (isHidden) {
-      userDropdown.classList.remove("hidden");
-      setTimeout(() => {
-        userDropdown.classList.remove("scale-95", "opacity-0");
-        userDropdown.classList.add("scale-100", "opacity-100");
-      }, 10);
-    } else {
-      userDropdown.classList.remove("scale-100", "opacity-100");
-      userDropdown.classList.add("scale-95", "opacity-0");
-      setTimeout(() => {
-        userDropdown.classList.add("hidden");
-      }, 150);
-    }
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (event) => {
-    if (
-      !userMenuButton.contains(event.target) &&
-      !userDropdown.contains(event.target)
-    ) {
-      if (!userDropdown.classList.contains("hidden")) {
-        userDropdown.classList.remove("scale-100", "opacity-100");
-        userDropdown.classList.add("scale-95", "opacity-0");
-        setTimeout(() => {
-          userDropdown.classList.add("hidden");
-        }, 150);
-      }
-    }
-  });
 });

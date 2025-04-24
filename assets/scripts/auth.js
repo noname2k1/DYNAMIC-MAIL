@@ -19,6 +19,8 @@ function loginWith(provider) {
   alert(`Redirecting to ${provider} login...`);
 }
 
+window.loginWith = loginWith;
+
 document.addEventListener("DOMContentLoaded", () => {
   const loginTab = document.getElementById("tab-login");
   const registerTab = document.getElementById("tab-register");
@@ -66,4 +68,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   indicator.style.left = `${loginTab.offsetLeft}px`;
   indicator.style.width = `${loginTab.offsetWidth}px`;
+});
+
+const signInBtn = document.getElementById("sign_in_btn");
+const signUpBtn = document.getElementById("sign_up_btn");
+
+signInBtn.addEventListener("click", function () {
+  alert("This feature coming soon");
+});
+signUpBtn.addEventListener("click", function () {
+  alert("This feature coming soon");
 });
