@@ -161,11 +161,14 @@
         class="flex items-center space-x-2 bg-white px-4 py-2 rounded-md shadow hover:bg-gray-100 focus:outline-none"
       >
         <img
-          src="./assets/images/user-avatar.png"
+          src=""
           alt="User Avatar"
-          class="w-8 h-8 rounded-full"
+          class="w-8 h-8 rounded-full user-avatar hidden"
         />
-        <span class="text-gray-700 font-medium">Người dùng</span>
+        <span
+          class="temp-avatar w-8 h-8 rounded-full if-no-avatar bg-red-600 text-white font-semibold flex items-center justify-center"
+        ></span>
+        <span class="text-gray-700 font-medium user-name">--------------</span>
         <svg
           class="w-4 h-4 text-gray-600"
           fill="none"

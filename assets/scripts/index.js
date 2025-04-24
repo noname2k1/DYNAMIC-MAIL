@@ -17,7 +17,6 @@ const bumpImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png";
 
 let hoverPolygon = null;
-let whale = null;
 
 Promise.all([
   fetch(countriesData).then((res) => res.json()),
@@ -61,6 +60,7 @@ Promise.all([
 
   world.controls().autoRotate = true;
   world.controls().autoRotateSpeed = 0.1;
+  world.pointOfView({ lat: 0, lng: 0, altitude: 1.5 });
 
   // === Thêm mô hình quay quanh địa cầu ===
   const scene = world.scene();
@@ -73,9 +73,6 @@ Promise.all([
 
   // Load mô hình .glb
   const clock = new THREE.Clock();
-
-  // const Spaceship = new Model(clock, "./models/spaceship.glb", globeRadius);
-  // Spaceship.load(scene);
 
   const models = [];
 
@@ -131,11 +128,6 @@ Promise.all([
     models.push(model);
   });
 
-  // console.dir({ world });
-  // console.log({ polygonData: world.polygonsData() });
-
-  // whale-end
-
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
@@ -144,4 +136,31 @@ Promise.all([
     // renderer.render(scene, camera);
   }
   animate();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const userData = JSON.parse(window.localStorage.getItem("userData"));
+  if (Object.keys(userData).length > 0) {
+    const { picture, name } = userData;
+    const avatar = picture;
+    const userAvatarImageElement = document.querySelector(".user-avatar");
+    const tempAvatarElement = document.querySelector(".temp-avatar");
+    const userName = document.querySelector(".user-name");
+    if (avatar) {
+      userAvatarImageElement.src = avatar;
+      userAvatarImageElement.classList.remove("hidden");
+      tempAvatarElement.classList.add("hidden");
+    } else {
+      tempAvatarElement.textContent = name.charAt(0);
+    }
+    if (name.length > 20) {
+      const newName = name.slice(0, 20);
+      userName.textContent = newName + "...";
+      userName.title = name;
+    } else {
+      userName.textContent = name;
+    }
+  } else {
+    window.location.href = "/auth.html";
+  }
 });

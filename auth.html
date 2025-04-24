@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      if (localStorage.getItem("isLogin") === "true") {
+        window.location.href = "/"; // Thay bằng đường dẫn trang chính của bạn
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AUTH - DYNAMIC DIARY</title>
@@ -9,6 +14,7 @@
       href="./assets/images/icon.ico"
       type="image/x-icon"
     />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
@@ -168,28 +174,34 @@
     </div>
     <script>
       function handleCredentialResponse(response) {
-        const token = response.credential;
-        // Gửi token đến máy chủ của bạn để xác thực và tạo phiên làm việc
-        // console.log("Token: " + token);
-        function parseJwt(token) {
-          const base64Url = token.split(".")[1];
-          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split("")
-              .map(function (c) {
-                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-              })
-              .join("")
-          );
+        try {
+          const token = response.credential;
+          function parseJwt(token) {
+            const base64Url = token.split(".")[1];
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split("")
+                .map(function (c) {
+                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+                })
+                .join("")
+            );
 
-          return JSON.parse(jsonPayload);
+            return JSON.parse(jsonPayload);
+          }
+          const decoded = parseJwt(token);
+          const { aud, azp, exp, iat, nbf, email_verified, ...userData } =
+            decoded;
+          window.localStorage.setItem("userData", JSON.stringify(userData));
+          window.localStorage.setItem(
+            "isLogin",
+            JSON.stringify(email_verified)
+          );
+          window.location.href = "/";
+        } catch (error) {
+          console.log("auth_error: " + error);
         }
-        const decoded = parseJwt(token);
-        const { aud, azp, exp, iat, nbf, email_verified, ...userData } =
-          decoded;
-        window.localStorage.setItem("userData", JSON.stringify(userData));
-        window.localStorage.setItem("isLogin", JSON.stringify(email_verified));
       }
     </script>
   </body>
