@@ -65,10 +65,10 @@ noRadio.addEventListener("change", () => {
 togglePassword.addEventListener("click", () => {
   if (passwordInput.type === "password") {
     passwordInput.type = "text";
-    togglePassword.textContent = "Ẩn";
+    togglePassword.textContent = "Hide";
   } else {
     passwordInput.type = "password";
-    togglePassword.textContent = "Hiện";
+    togglePassword.textContent = "Show";
   }
 });
 
@@ -107,7 +107,7 @@ newDiaryForm.addEventListener("submit", (e) => {
         window.world.htmlElementsData(markerData);
         handleSending(false);
         handleFormClose();
-        window.world.pointOfView({ lat, lng, altitude: 1.5 }, 1000);
+        window.world.pointOfView({ lat, lng, altitude: 0.4 }, 1000);
       },
       function (error) {
         alert(`Lỗi: ${error.message}`);
