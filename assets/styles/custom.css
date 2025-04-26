@@ -1,0 +1,15 @@
+/* custom scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin; /* Firefox */
+}
+.scrollbar-thumb-rounded {
+  scrollbar-color: #a0aec0 transparent; /* màu thanh kéo */
+}
+.scrollbar-thumb-gray-500::-webkit-scrollbar-thumb {
+  background-color: #a0aec0; /* màu thanh kéo */
+  border-radius: 9999px; /* rounded */
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}

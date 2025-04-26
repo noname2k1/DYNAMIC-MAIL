@@ -1,13 +1,5 @@
+import { configGlobe, executeYesNoDialog } from "./utils.js";
 document.addEventListener("DOMContentLoaded", function () {
-  const configGlobe = JSON.parse(
-    window.localStorage.getItem("config-globe")
-  ) || {
-    rotation: true,
-    speed: 0.1,
-    labelColor: "rgba(255, 165, 0, 0.75)",
-    labelResolution: 2,
-    labelAltitude: 0.05,
-  };
   let globeSelected = true;
   const imageCollection = document.querySelector(".image-collection");
   const globeImageTab = document.querySelector(".globe-image-tab");
@@ -78,16 +70,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   imageCollection.innerHTML = renderImagesHTML(globeImageUrls);
 
-  const setConfigGlobe = (obj) => {
-    window.localStorage.setItem(
-      "config-globe",
-      JSON.stringify({
-        ...configGlobe,
-        ...obj,
-      })
-    );
-  };
-
   // handle rotate globe
   rotateGlobeSwitch.checked = configGlobe.rotation;
   rotateGlobeSwitch.addEventListener("change", function (e) {
@@ -145,6 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
       globeSelected
         ? window.world.globeImageUrl(imgSrc)
         : window.world.bumpImageUrl(imgSrc);
+      globeSelected
+        ? setConfigGlobe({ globeImageUrl: imgSrc })
+        : setConfigGlobe({ bumpImageUrl: imgSrc });
       const checkImage = event.target.nextElementSibling;
       if (checkImage && checkImage.tagName.toLowerCase() === "img") {
         checkImage.classList.remove("hidden");

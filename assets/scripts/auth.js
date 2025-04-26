@@ -1,8 +1,18 @@
+import {
+  getLocalStorage,
+  setLocalStorage,
+  USER_DATA,
+  IS_LOGIN,
+} from "./utils.js";
 import Globe from "https://esm.sh/globe.gl";
 const globImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
 const bumpImageUrl =
   "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png";
+
+if (getLocalStorage(IS_LOGIN, false)) {
+  window.location.href = "/"; // Thay bằng đường dẫn trang chính của bạn
+}
 
 const world = new Globe(document.getElementById("globeViz"), {
   animateIn: false,
@@ -79,3 +89,33 @@ signInBtn.addEventListener("click", function () {
 signUpBtn.addEventListener("click", function () {
   alert("This feature coming soon");
 });
+
+function handleCredentialResponse(response) {
+  try {
+    const token = response.credential;
+    function parseJwt(token) {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+
+      return JSON.parse(jsonPayload);
+    }
+    const decoded = parseJwt(token);
+    const { aud, azp, exp, iat, nbf, email_verified, ...userData } = decoded;
+    userData.avatar_frame = "";
+    setLocalStorage(USER_DATA, userData);
+    setLocalStorage(IS_LOGIN, true);
+    window.location.href = "/";
+  } catch (error) {
+    console.log("auth_error: " + error);
+  }
+}
+
+window.handleCredentialResponse = handleCredentialResponse;

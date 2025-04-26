@@ -11,6 +11,7 @@ const backgroundTable = document.querySelector(".background-table");
 function handleFormClose() {
   Wrapper.classList.add("invisible");
   newDiaryForm.classList.add("hidden");
+  backgroundTable.classList.add("hidden");
 }
 
 newDiaryBtn.addEventListener("click", function () {

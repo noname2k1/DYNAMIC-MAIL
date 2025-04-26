@@ -10,6 +10,7 @@
       type="image/x-icon"
     />
     <link rel="stylesheet" href="./assets/styles/main.css" />
+    <link rel="stylesheet" href="./assets/styles/custom.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       .not-active-tab {
@@ -308,17 +309,44 @@
 
     <!-- Nút người dùng -->
     <div class="fixed right-4 top-4 inline-block text-left z-10">
+      <!-- frame selectable table -->
+      <div
+        id="frame-select-wrapper"
+        class="absolute right-[calc(100%+4px)] max-h-[80vh] overflow-y-auto top-0 rounded-lg bg-white min-w-20 py-2 px-4 scrollbar-thin hidden"
+      >
+        <h3 class="font-semibold text-nowrap text-xl flex items-center">
+          <span>CHOOSE FRAME YOU WANT!!!</span>
+          <button class="close-frame-table-btn w-[3rem] mr-[-1rem]">
+            <img src="./assets/svgs/close.svg" alt="close" />
+          </button>
+        </h3>
+        <div
+          id="frame-list"
+          class="flex items-center justify-center cursor-pointer mt-4 mb-6 flex-wrap space-y-2"
+        ></div>
+      </div>
       <button
         id="userMenuButton"
-        class="flex items-center space-x-2 bg-white px-4 py-2 rounded-md shadow hover:bg-gray-100 focus:outline-none"
+        class="flex items-center bg-white px-4 py-2 rounded-md shadow hover:bg-gray-100 focus:outline-none"
       >
-        <img
-          src=""
-          alt="User Avatar"
-          class="w-8 h-8 rounded-full user-avatar hidden"
-        />
+        <div
+          title="click to change Avatar Frame"
+          class="frame-btn w-10 h-10 relative mr-2 flex items-center justify-center"
+        >
+          <img
+            src=""
+            alt="User Avatar"
+            class="rounded-full w-[80%] h-[80%] object-cover user-avatar hidden"
+          />
+          <img
+            id="avatar-frame"
+            src="./assets/images/frames/frame_0.png"
+            alt="Frame"
+            class="w-full h-w-full top-0 left-0 rounded-full hidden absolute"
+          />
+        </div>
         <span
-          class="temp-avatar w-8 h-8 rounded-full if-no-avatar bg-red-600 text-white font-semibold flex items-center justify-center"
+          class="temp-avatar w-10 h-10 rounded-full if-no-avatar bg-red-600 text-white font-semibold flex items-center justify-center"
         ></span>
         <span class="text-gray-700 font-medium user-name">--------------</span>
         <svg
@@ -360,8 +388,7 @@
             >Settings</a
           >
           <a
-            href="#"
-            class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+            class="logout-btn block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
             role="menuitem"
             >Logout</a
           >
@@ -369,11 +396,45 @@
       </div>
     </div>
 
+    <!-- portal to preview avatar frame -->
+    <div
+      class="preview-frame-wrapper rounded-md border-2 border-white fixed z-10 hidden bg-black items-center justify-center w-[20vw] h-[20vw]"
+    >
+      <img
+        src=""
+        alt="Frame selected"
+        class="w-[80%] h-[80%] rounded-full object-cover"
+      />
+    </div>
+
+    <!-- portal yes/no dialog -->
+    <div
+      id="dialog-yes-no"
+      class="fixed z-20 top-[10vh] left-1/2 -translate-x-1/2 bg-white backdrop-blur-md rounded-2xl shadow-2xl text-center space-y-6 p-6 hidden"
+    >
+      <h3 class="text-2xl font-semibold text-gray-500">Notification</h3>
+      <p class="text-xl font-semibold text-gray-800">Do you want to logout?</p>
+      <div class="flex items-center justify-center space-x-4">
+        <button
+          id="yes-btn"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-semibold transition"
+        >
+          Yes
+        </button>
+        <button
+          id="no-btn"
+          class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold transition"
+        >
+          No
+        </button>
+      </div>
+    </div>
+
     <div id="globeViz"></div>
 
     <script type="module" src="./assets/scripts/index.js"></script>
-    <script src="./assets/scripts/diary.js"></script>
-    <script src="./assets/scripts/user.js"></script>
-    <script src="./assets/scripts/config.js"></script>
+    <script type="module" src="./assets/scripts/diary.js"></script>
+    <script type="module" src="./assets/scripts/user.js"></script>
+    <script type="module" src="./assets/scripts/config.js"></script>
   </body>
 </html>
