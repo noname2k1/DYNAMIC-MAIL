@@ -12,7 +12,9 @@ export default class Model {
     dir = 1,
     ligher = false,
     type = "fly",
-    staticPos = []
+    staticPos = [],
+    modelName = "",
+    isSecret = false
   ) {
     this.clock = clock;
     this.modelURL = modelURL;
@@ -29,6 +31,9 @@ export default class Model {
     this.type = type;
     this.currentTarget = null;
     this.staticPos = staticPos;
+    this.modelName = modelName;
+    this.isSecret = isSecret;
+    this.animations = [];
   }
 
   load(scene, onLoaded = () => {}) {
@@ -53,26 +58,28 @@ export default class Model {
         }
         // Nếu có animation
         if (gltf.animations.length > 0) {
+          this.animations = gltf.animations.map((clip) => {
+            return clip;
+          });
           this.mixer = new THREE.AnimationMixer(this.model);
           // console.log(gltf.animations);
-          if (
-            this.animateName != "" &&
-            gltf.animations.some(
-              (ani) => ani.name.toLowerCase() == this.animateName.toLowerCase()
-            )
-          ) {
-            const specificAnim = gltf.animations.find(
-              (ani) => ani.name.toLowerCase() == this.animateName.toLowerCase()
-            );
-            // console.log(specificAnim);
-            this.mixer.clipAction(specificAnim)?.play();
+          if (gltf.animations.length === 1) {
+            this.animateName = gltf.animations[0].name;
+            this.mixer.clipAction(gltf.animations[0]).play();
           } else {
-            gltf.animations.forEach((clip) => {
-              this.mixer.clipAction(clip).play();
-            });
+            for (const clip of gltf.animations) {
+              if (
+                this.animateName !== "" &&
+                this.animateName !== "Take 001" &&
+                clip.name.toLowerCase() === this.animateName.toLowerCase()
+              ) {
+                // console.log("Animation name:", clip.name);
+                this.mixer.clipAction(clip).play();
+                break;
+              }
+            }
           }
         }
-
         onLoaded();
       },
       undefined,
@@ -107,6 +114,26 @@ export default class Model {
 
   get object3D() {
     return this.model;
+  }
+
+  get getAnimations() {
+    return this.animations;
+  }
+
+  changeAnimation(name) {
+    if (this.mixer) {
+      this.mixer.stopAllAction();
+      this.animateName = name;
+      // console.log({ animations: this.animations });
+
+      for (const clip of this.animations) {
+        if (clip.name === name) {
+          // console.log("Animation name:", clip.name);
+          this.mixer.clipAction(clip).play();
+          break;
+        }
+      }
+    }
   }
 }
 

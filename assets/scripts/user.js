@@ -163,7 +163,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const rectHoverredImage = hoverredImage.getBoundingClientRect();
     previewFrameWapper.style.left =
       rectHoverredImage.left - rectPreviewFrameWapper.width + "px";
-    previewFrameWapper.style.top = `${rectHoverredImage.top}px`;
+    const frameHeight = window.innerWidth * 0.2;
+    const overTopCaculate = rectHoverredImage.top + frameHeight;
+    const heightScreen = window.innerHeight;
+    const overTop =
+      overTopCaculate < heightScreen ? 0 : overTopCaculate - heightScreen;
+    previewFrameWapper.style.top = `${rectHoverredImage.top - overTop}px`;
   };
 
   const hidePreviewFrame = (index) => {
@@ -188,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
             />
           </div>`
   );
-  const frameCount = 59; // Number of frames
+  const frameCount = 64; // Number of frames
   Array(frameCount)
     .keys()
     .forEach((i) => {

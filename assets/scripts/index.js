@@ -3,9 +3,9 @@ import { feature } from "https://esm.sh/topojson-client@3";
 import { geoCentroid, geoContains } from "https://esm.sh/d3-geo@3";
 import Model from "../../objects/Model.js";
 import * as THREE from "three";
-import { configGlobe } from "./utils.js";
-// import { OrbitControls } from "OrbitControls";
-// import { GLTFLoader } from "GLTFLoader";
+import { configGlobe, getLocalStorage, MODEL_NAME } from "./utils.js";
+import { OrbitControls } from "OrbitControls";
+import { GLTFLoader } from "GLTFLoader";
 
 const loadingGlobe = document.querySelector(".loading-globe");
 const explosion = document.querySelector(".explosion");
@@ -107,21 +107,25 @@ Promise.all([
 
   const modelConfigs = [
     {
-      url: "./models/killer_whale.glb",
+      modelURL: "./models/killer_whale.glb",
       speed: 0.002,
       scale: [0.005, 0.005, 0.005],
       animateName: "Take 001",
       dir: 10,
       lighter: true,
       type: "swim",
+      modelName: "Killer Whale",
+      isSecret: true,
     },
     {
-      url: "./models/mecha_aurelion_sol.glb",
+      modelURL: "./models/mecha_aurelion_sol.glb",
       speed: 0.02,
       scale: [0.05, 0.05, 0.05],
       animateName: "AurelionSol_runspin2.anm",
       dir: 10,
       lighter: true,
+      type: "fly",
+      modelName: "Mecha Aurelion Sol",
     },
   ];
 
@@ -129,19 +133,172 @@ Promise.all([
   modelConfigs.forEach((config) => {
     const model = new Model(
       clock,
-      config.url,
+      config.modelURL,
       globeRadius,
       config.speed,
       config.scale,
       config.animateName,
       config.dir,
       config.lighter,
-      config.type
+      config.type,
+      config.staticPos,
+      config.modelName,
+      config.isSecret
     );
     model.load(scene);
     models.push(model);
   });
 
+  // 3d model preview
+  const modelName = getLocalStorage(MODEL_NAME, "Mecha Aurelion Sol");
+  const isActivatingModel = models.find((m) => m.modelName == modelName);
+  const previewContainer = document.getElementById("model-preview-container");
+  const toolsContainer = document.querySelector(".model-tools");
+  const animationsSelector = document.getElementById("animations");
+
+  const newScene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+
+  const renderer = new THREE.WebGLRenderer();
+  const controls = new OrbitControls(camera, renderer.domElement);
+  renderer.setSize(
+    previewContainer.getBoundingClientRect().width,
+    previewContainer.getBoundingClientRect().height
+  );
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0x000000, 0); // Set transparent background
+
+  previewContainer.appendChild(renderer.domElement);
+  if (isActivatingModel) {
+    // console.log(isActivatingModel);
+    const loader = new GLTFLoader();
+    let mixer;
+    let previewModel = null;
+    loader.load(
+      isActivatingModel.modelURL,
+      function (gltf) {
+        previewModel = gltf.scene;
+        newScene.add(previewModel);
+        previewModel.scale.set(0.05, 0.05, 0.05);
+        previewModel.position.set(0, 0, 0);
+        previewModel.rotation.set(0, -Math.PI / 2, 0);
+        // gltf.scene.rotation.set(0, Math.PI / 2, 0);
+        gltf.scene.traverse((child) => {
+          if (child.isMesh) {
+            const oldMat = child.material;
+            child.material = new THREE.MeshBasicMaterial({
+              map: oldMat.map || null,
+              color: 0xffffff,
+            });
+          }
+        });
+        if (gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(previewModel);
+          // console.log(gltf.animations);
+          if (
+            gltf.animations.some(
+              (ani) =>
+                ani.name.toLowerCase() ==
+                isActivatingModel.animateName.toLowerCase()
+            )
+          ) {
+            const specificAnim = gltf.animations.find(
+              (ani) =>
+                ani.name.toLowerCase() ==
+                isActivatingModel.animateName.toLowerCase()
+            );
+            mixer.clipAction(specificAnim).play();
+            // console.log(specificAnim);
+          } else {
+            gltf.animations.forEach((clip) => {
+              mixer.clipAction(clip).play();
+            });
+          }
+        }
+
+        // render animations
+        gltf.animations.forEach((clip) => {
+          const option = document.createElement("option");
+          option.value = clip.name;
+          option.textContent = clip.name;
+          animationsSelector.appendChild(option);
+        });
+        animationsSelector.value = isActivatingModel.animateName;
+        animationsSelector.addEventListener("change", (e) => {
+          const selectedAnim = gltf.animations.find(
+            (ani) => ani.name == e.target.value
+          );
+          if (selectedAnim) {
+            mixer.stopAllAction();
+            mixer.clipAction(selectedAnim).play();
+            isActivatingModel.changeAnimation(selectedAnim.name);
+          }
+        });
+
+        // render tools
+        const boxHelper = new THREE.BoxHelper(previewModel, 0xff0000);
+        const axesHelper = new THREE.AxesHelper(5);
+        function toggleBoxHelper(isEnabled) {
+          if (isEnabled) {
+            newScene.add(boxHelper);
+            newScene.add(axesHelper);
+          } else {
+            newScene.remove(boxHelper);
+            newScene.remove(axesHelper);
+          }
+        }
+        [
+          { name: "box helper", callback: toggleBoxHelper },
+          { name: "Zoom", callback: () => {} },
+          { name: "Box", callback: () => {} },
+        ].forEach((tool) => {
+          const html = `<div class="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="${tool.name.replace(" ", "-")}"
+                id="${tool.name.replace(" ", "-")}"
+                class="accent-blue-500"
+              />
+              <label for="${tool.name.replace(
+                " ",
+                "-"
+              )}" class="ml-2 capitalize">${tool.name}</label>
+            </div>`;
+          toolsContainer.insertAdjacentHTML("beforeend", html);
+          const checkbox = toolsContainer.querySelector(
+            `input[name="${tool.name.replace(" ", "-")}"]`
+          );
+          checkbox.addEventListener("change", (e) => {
+            tool.callback(e.target.checked);
+          });
+        });
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+
+    camera.position.z = 50;
+    controls.update();
+    const newClock = new THREE.Clock();
+    function modelPreviewAnimate(time) {
+      requestAnimationFrame(modelPreviewAnimate);
+      // cube.rotation.x += 0.01;
+      // cube.rotation.y += 0.01;
+
+      const delta = newClock.getDelta();
+      if (mixer) mixer.update(delta);
+      controls.update();
+      renderer.render(newScene, camera);
+    }
+    modelPreviewAnimate();
+  }
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
@@ -151,4 +308,11 @@ Promise.all([
   }
   animate();
   window.world = world;
+
+  const closePreviewBtn = document.getElementById("close-config-model-btn");
+  const switchCheckbox = document.getElementById("toggle-config-3d-model");
+  const handleClosePreview = () => {
+    switchCheckbox.checked = false;
+  };
+  closePreviewBtn.addEventListener("click", handleClosePreview);
 });

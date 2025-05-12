@@ -403,7 +403,7 @@
       <img
         src=""
         alt="Frame selected"
-        class="w-[80%] h-[80%] rounded-full object-cover"
+        class="w-[110%] h-[110%] rounded-full object-cover"
       />
     </div>
 
@@ -426,6 +426,65 @@
           class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold transition"
         >
           No
+        </button>
+      </div>
+    </div>
+
+    <!-- 3d model config -->
+    <div
+      id="config-3d-model"
+      class="fixed z-20 top-[50vh] right-0 -translate-y-1/2 translate-x-full bg-white backdrop-blur-md rounded-s-2xl shadow-2xl text-center p-6 has-[input#toggle-config-3d-model:checked]:translate-x-0 duration-300"
+    >
+      <!-- button -->
+      <label
+        class="absolute top-1/2 -translate-y-1/2 right-full w-[4vw] bg-white h-[4vw] close-config-model-btn rounded-s-2xl p-2 hover:bg-white/50 flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer"
+        for="toggle-config-3d-model"
+        title="toggle config 3d model"
+      >
+        <input
+          type="checkbox"
+          name=""
+          id="toggle-config-3d-model"
+          class="hidden peer"
+        />
+        <span class="peer-checked:hidden block">
+          <img
+            src="./assets/svgs/robot.svg"
+            alt="expand config 3d model button"
+          />
+        </span>
+        <span class="hidden peer-checked:block">
+          <img
+            src="./assets/svgs/shrink-to-right.svg"
+            alt="shrink config 3d model button"
+          />
+        </span>
+      </label>
+      <h3 class="text-2xl font-semibold text-gray-500">Config 3D Model</h3>
+      <div class="flex items-center justify-center space-x-4 my-2">
+        <div
+          class="flex items-center justify-center w-[40vw] h-[40vw] bg-gray-200 rounded-md border-2 border-gray-300"
+          id="model-preview-container"
+        ></div>
+        <div class="model-tools flex flex-col justify-center items-center">
+          <!-- <div class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="rotation-model"
+              id="rotation-model"
+              class="accent-blue-500"
+            />
+            <label for="rotation-model" class="ml-2">Rotation Model</label>
+          </div> -->
+          <select name="animations" id="animations"></select>
+        </div>
+      </div>
+      <div class="flex items-center justify-center space-x-4">
+        <button
+          id="close-config-model-btn"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-semibold transition"
+        >
+          Close
         </button>
       </div>
     </div>

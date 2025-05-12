@@ -109,7 +109,7 @@ function handleCredentialResponse(response) {
     }
     const decoded = parseJwt(token);
     const { aud, azp, exp, iat, nbf, email_verified, ...userData } = decoded;
-    userData.avatar_frame = "";
+    userData.avatarFrame = "";
     setLocalStorage(USER_DATA, userData);
     setLocalStorage(IS_LOGIN, true);
     window.location.href = "/";

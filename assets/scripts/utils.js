@@ -1,6 +1,7 @@
 export const CONFIG_GLOBE = "config-globe";
 export const USER_DATA = "user-data";
 export const IS_LOGIN = "is-login";
+export const MODEL_NAME = "model-name";
 const yesNoDialog = document.getElementById("dialog-yes-no");
 
 export const setLocalStorage = (key, value) => {
