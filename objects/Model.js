@@ -14,6 +14,7 @@ export default class Model {
     type = "fly",
     staticPos = [],
     modelName = "",
+    isActive = false,
     isSecret = false
   ) {
     this.clock = clock;
@@ -34,9 +35,11 @@ export default class Model {
     this.modelName = modelName;
     this.isSecret = isSecret;
     this.animations = [];
+    this.isActive = isActive;
   }
 
   load(scene, onLoaded = () => {}) {
+    if (!this.isActive) return;
     const loader = new GLTFLoader();
 
     loader.load(
@@ -88,7 +91,7 @@ export default class Model {
   }
 
   update(delta) {
-    if (!this.model) return;
+    if (!this.model || !this.isActive) return;
     let x, y, z;
     if (this.staticPos.length == 0) {
       x = this.orbitRadius * Math.cos(this.angle);

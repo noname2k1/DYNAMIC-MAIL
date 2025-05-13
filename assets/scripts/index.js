@@ -116,6 +116,7 @@ Promise.all([
       type: "swim",
       modelName: "Killer Whale",
       isSecret: true,
+      isActive: true,
     },
     {
       modelURL: "./models/mecha_aurelion_sol.glb",
@@ -126,6 +127,7 @@ Promise.all([
       lighter: true,
       type: "fly",
       modelName: "Mecha Aurelion Sol",
+      isActive: true,
     },
   ];
 
@@ -143,6 +145,7 @@ Promise.all([
       config.type,
       config.staticPos,
       config.modelName,
+      config.isActive,
       config.isSecret
     );
     model.load(scene);
@@ -152,7 +155,8 @@ Promise.all([
   // 3d model preview
   const modelName = getLocalStorage(MODEL_NAME, "Mecha Aurelion Sol");
   const isActivatingModel = models.find((m) => m.modelName == modelName);
-  const previewContainer = document.getElementById("model-preview-container");
+  // const previewContainer = document.getElementById("model-preview-container");
+  const renderPreviewArea = document.getElementById("render-preview-area");
   const toolsContainer = document.querySelector(".model-tools");
   const animationsSelector = document.getElementById("animations");
 
@@ -167,18 +171,19 @@ Promise.all([
   const renderer = new THREE.WebGLRenderer();
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.setSize(
-    previewContainer.getBoundingClientRect().width,
-    previewContainer.getBoundingClientRect().height
+    renderPreviewArea.getBoundingClientRect().width,
+    renderPreviewArea.getBoundingClientRect().height
   );
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0); // Set transparent background
 
-  previewContainer.appendChild(renderer.domElement);
+  renderPreviewArea.appendChild(renderer.domElement);
+
+  let previewModel = null;
   if (isActivatingModel) {
     // console.log(isActivatingModel);
     const loader = new GLTFLoader();
     let mixer;
-    let previewModel = null;
     loader.load(
       isActivatingModel.modelURL,
       function (gltf) {
@@ -299,6 +304,90 @@ Promise.all([
     }
     modelPreviewAnimate();
   }
+
+  const expandPreviewCheckbox = document.getElementById("expand-model-preview");
+  expandPreviewCheckbox.addEventListener("change", function () {
+    if (this.checked) {
+    } else {
+    }
+    renderer.setSize(
+      renderPreviewArea.getBoundingClientRect().width,
+      renderPreviewArea.getBoundingClientRect().height
+    );
+  });
+
+  // render models list
+  const modelsList = document.getElementById("models-list");
+  models.forEach((model) => {
+    const li = document.createElement("li");
+    li.classList.add("flex", "items-center", "space-x-2");
+    li.innerHTML = `<input type="checkbox" name="${model.modelName}" id="${
+      model.modelName
+    }" class="accent-blue-500" ${model.isActive ? "checked" : ""} />
+      <label for="${model.modelName}" class="ml-2 capitalize">${
+      model.modelName
+    }</label>`;
+    modelsList.appendChild(li);
+    const checkbox = modelsList.querySelector(
+      `input[name="${model.modelName}"]`
+    );
+    checkbox.addEventListener("change", (e) => {
+      model.isActive = e.target.checked;
+      if (e.target.checked) {
+        world.scene().add(model.object3D);
+      } else {
+        world.scene().remove(model.object3D);
+      }
+    });
+  });
+
+  // Thêm sự kiện click vào nút "Tải mô hình"
+  const input = document.getElementById("modelFileInput");
+  const progressBar = document.getElementById("progress");
+  const progressPercent = document.getElementById("progress-percent");
+  input.addEventListener("change", async (event) => {
+    // Xóa mô hình hiện tại
+    if (previewModel) {
+      newScene.remove(previewModel);
+      previewModel = null;
+    }
+    // Xóa phần trăm tải
+    progressBar.classList.remove("hidden");
+    progressBar.classList.add("flex");
+    progressPercent.style.width = "0%";
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file); // Tạo URL tạm
+
+    const loader = new GLTFLoader();
+    try {
+      const gltfFile = await loader.loadAsync(url, function (xhr) {
+        // Tính phần trăm
+        if (xhr.lengthComputable) {
+          const percentComplete = (xhr.loaded / xhr.total) * 100;
+          console.log(`Loading model: ${percentComplete.toFixed(2)}%`);
+          // Bạn có thể cập nhật giao diện tại đây, ví dụ:
+          progressPercent.style.width = `${percentComplete}%`;
+        }
+      });
+
+      const modelFromFile = gltfFile.scene;
+      modelFromFile.scale.set(0.05, 0.05, 0.05);
+      modelFromFile.position.set(0, 0, 0);
+      modelFromFile.rotation.set(0, -Math.PI / 2, 0);
+
+      newScene.remove(previewModel);
+      newScene.add(modelFromFile);
+      progressBar.classList.add("hidden");
+      progressBar.classList.remove("flex");
+      // Dọn bộ nhớ khi không cần dùng nữa
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to load model:", error);
+    }
+  });
+
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);

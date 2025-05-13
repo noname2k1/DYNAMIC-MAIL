@@ -64,17 +64,7 @@
           class="h-full"
         />
       </button>
-      <!-- search diary btn -->
-      <button
-        title="search diary"
-        class="search-diary p-2 rounded-md bg-white ml-4 h-14 hover:bg-white/35"
-      >
-        <img
-          src="./assets/svgs/search-alt.svg"
-          alt="search diary"
-          class="h-full"
-        />
-      </button>
+
       <!-- config rotation globe -->
       <button
         title="config globe"
@@ -169,6 +159,17 @@
         <img
           src="./assets/svgs/image.svg"
           alt="background globe"
+          class="h-full"
+        />
+      </button>
+      <!-- search diary btn -->
+      <button
+        title="search diary"
+        class="search-diary p-2 rounded-md bg-white ml-4 h-14 hover:bg-white/35"
+      >
+        <img
+          src="./assets/svgs/search-alt.svg"
+          alt="search diary"
           class="h-full"
         />
       </button>
@@ -433,7 +434,7 @@
     <!-- 3d model config -->
     <div
       id="config-3d-model"
-      class="fixed z-20 top-[50vh] right-0 -translate-y-1/2 translate-x-full bg-white backdrop-blur-md rounded-s-2xl shadow-2xl text-center p-6 has-[input#toggle-config-3d-model:checked]:translate-x-0 duration-300"
+      class="fixed z-20 top-[50vh] right-0 -translate-y-1/2 translate-x-full bg-white/50 backdrop-blur-md rounded-s-2xl shadow-2xl text-center p-6 pr-0 has-[input#toggle-config-3d-model:checked]:translate-x-0 has-[input#expand-model-preview:checked]:bg-white duration-300"
     >
       <!-- button -->
       <label
@@ -460,22 +461,57 @@
           />
         </span>
       </label>
-      <h3 class="text-2xl font-semibold text-gray-500">Config 3D Model</h3>
-      <div class="flex items-center justify-center space-x-4 my-2">
+      <h3 class="text-2xl font-semibold uppercase">Config 3D Model</h3>
+      <div class="flex items-center justify-center my-2">
+        <!-- left side (render model area) -->
         <div
-          class="flex items-center justify-center w-[40vw] h-[40vw] bg-gray-200 rounded-md border-2 border-gray-300"
+          class="flex items-center relative justify-center w-[30vw] h-[30vw] bg-transparent rounded-md border-2 border-gray-300 group has-[input#expand-model-preview:checked]:w-screen has-[input#expand-model-preview:checked]:h-screen has-[input#expand-model-preview:checked]:border-transparent peer"
           id="model-preview-container"
-        ></div>
-        <div class="model-tools flex flex-col justify-center items-center">
-          <!-- <div class="flex items-center space-x-2">
+        >
+          <div id="render-preview-area" class="w-full h-full"></div>
+
+          <label
+            class="absolute top-2 right-2 w-10 h-10 p-2 rounded-md group-hover:visible invisible cursor-pointer duration-300 z-10"
+            for="expand-model-preview"
+          >
             <input
               type="checkbox"
-              name="rotation-model"
-              id="rotation-model"
-              class="accent-blue-500"
+              name="expand-model-preview"
+              id="expand-model-preview"
+              class="hidden peer"
             />
-            <label for="rotation-model" class="ml-2">Rotation Model</label>
-          </div> -->
+            <img
+              src="./assets/svgs/fullscreen.svg"
+              alt="expand model preview"
+              class="block peer-checked:hidden"
+            />
+            <img
+              src="./assets/svgs/fullscreen-exit.svg"
+              alt="expand model preview"
+              class="hidden peer-checked:block"
+            />
+          </label>
+        </div>
+        <!-- right side -->
+        <div
+          class="model-tools peer-has-[input#expand-model-preview:checked]:hidden flex flex-col justify-center items-center bg-white h-full rounded-md p-4 mx-6"
+        >
+          <div class="border-dashed border-2 border-gray-300 p-4 rounded-md">
+            <div class="flex items-center justify-center">
+              <label class="mr-2" for="modelFileInput">3D Model Viewer:</label>
+              <input type="file" id="modelFileInput" accept=".glb,.gltf" />
+            </div>
+            <div
+              id="progress"
+              class="border bg-white/20 relative w-[40vw] h-4 rounded-md items-center justify-center mt-2 hidden"
+            >
+              <div
+                id="progress-percent"
+                class="bg-green-600 h-full absolute top-0 left-0 w-0"
+              ></div>
+            </div>
+          </div>
+          <ul name="models-list" id="models-list"></ul>
           <select name="animations" id="animations"></select>
         </div>
       </div>
@@ -492,6 +528,7 @@
     <div id="globeViz"></div>
 
     <script type="module" src="./assets/scripts/index.js"></script>
+    <script type="module" src="./assets/scripts/3dmodel.config.js"></script>
     <script type="module" src="./assets/scripts/diary.js"></script>
     <script type="module" src="./assets/scripts/user.js"></script>
     <script type="module" src="./assets/scripts/config.js"></script>
